@@ -15,13 +15,9 @@ const INDUSTRIES = [
   '建設',
   '小売・流通・印刷',
   '金融',
-<<<<<<< HEAD
   '人材・教育・サービス業・エンタメ・コンサル',
 ];//GD
-=======
-  'IT人材・教育・サービス業・エンタメ・コンサル',
-];
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
+
 const TIMETABLE = [
   '1コマ(9:00-10:30)',
   '2コマ(10:45-12:15)',
@@ -121,12 +117,9 @@ function _onEditRss(e, rowIdx, colIdx) {
   const sheetStudent = ssStudent.getSheetByName(sheetRss.getSheetName());
   const sheetData = ssData.getSheetByName(sheetRss.getSheetName());
 
-<<<<<<< HEAD
   const value = sheetRss.getRange(rowIdx, colIdx).getValue()
   console.log({message: 'func: editRss()', value, rowIdx, colIdx, sheetName: sheetRss.getSheetName()});
 
-=======
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
   const sectionNum = calcSectionNum(rowIdx, 'rss');
   const questionNum = calcQuestionNum(rowIdx, 'rss');
 
@@ -137,11 +130,7 @@ function _onEditRss(e, rowIdx, colIdx) {
   const date = sheetRss
     .getRange(rowIdxStartFromRss, 1, LABELS_INPUT_ROW_RSS.length, 1)
     .getValue(); // suppose to be Date object
-<<<<<<< HEAD
   const dataId = calcDataId(date, colIdx);
-=======
-  const dataId = calcDateId(date, colIdx);
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
 
   // find dataId and row idx of data
   const dataIdx = getDataIdx(sheetData, dataId);
@@ -159,11 +148,7 @@ function _onEditRss(e, rowIdx, colIdx) {
   if (questionNum === 1) colIdxData = 5;
   if (questionNum === 2) colIdxData = 4;
   if (colIdxData) {
-<<<<<<< HEAD
     sheetData.getRange(rowIdxData, colIdxData).setValue(value);
-=======
-    sheetData.getRange(rowIdxData, colIdxData).setValue(e.value);
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
     sheetData.getRange(rowIdxData, 10).setValue(new Date()); // updated_at
   }
 
@@ -197,7 +182,6 @@ function _onEditRss(e, rowIdx, colIdx) {
 }
 
 function onEditStudent(e) {
-<<<<<<< HEAD
   const debug_e = {
     namedValues: e.namedValues,
     range:  e.range.getA1Notation(),
@@ -205,8 +189,6 @@ function onEditStudent(e) {
   }
   console.log({message: 'onEditStudent() Event Object', eventObject: debug_e});
 
-=======
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
   const range = e.range;
   const rowIdx = range.getRow();
   const colIdx = range.getColumn();
@@ -224,17 +206,12 @@ function _onEditStudent(e, rowIdx, colIdx) {
   const sheetStudent = e.source.getActiveSheet();
   const sheetData = ssData.getSheetByName(sheetStudent.getSheetName());
 
-<<<<<<< HEAD
   const value = sheetStudent.getRange(rowIdx, colIdx).getValue()
   console.log({message: 'func: _onEditStudent()', value, rowIdx, colIdx, sheetName: sheetStudent.getSheetName()});
 
   const sectionNum = calcSectionNum(rowIdx, 'student');
   const questionNum = calcQuestionNum(rowIdx, 'student');
 
-=======
-  const sectionNum = calcSectionNum(rowIdx, 'student');
-  const questionNum = calcQuestionNum(rowIdx, 'student');
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
   const rowIdxStartFromStudent = calcSectionRowStartFrom(sectionNum, 'student');
   const rowIdxStudentId = rowIdxStartFromStudent + 1;
   const rowIdxLastData = sheetData.getLastRow();
@@ -242,11 +219,7 @@ function _onEditStudent(e, rowIdx, colIdx) {
   const date = sheetStudent
     .getRange(rowIdxStartFromStudent, 1, LABELS_INPUT_ROW_STUDENT.length, 1)
     .getValue(); // suppose to be Date object
-<<<<<<< HEAD
   const dataId = calcDataId(date, colIdx);
-=======
-  const dataId = calcDateId(date, colIdx);
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
 
   // find dataId and row idx of data
   const dataIdx = getDataIdx(sheetData, dataId);
@@ -261,32 +234,20 @@ function _onEditStudent(e, rowIdx, colIdx) {
 
   // set data
   let colIdxData = null;
-<<<<<<< HEAD
-=======
-  console.log(questionNum);
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
   if (questionNum === 1) colIdxData = 3;
   if (questionNum === 2) colIdxData = 2;
   if (!colIdxData) return;
 
   const period = calcPeriod(colIdx);
   const session = calcSession(colIdx);
-<<<<<<< HEAD
   sheetData.getRange(rowIdxData, colIdxData).setValue(value);
-=======
-  sheetData.getRange(rowIdxData, colIdxData).setValue(e.value);
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
   sheetData.getRange(rowIdxData, 6).setValue(date);
   sheetData.getRange(rowIdxData, 7).setValue(period);
   sheetData.getRange(rowIdxData, 8).setValue(session);
   sheetData.getRange(rowIdxData, 10).setValue(new Date()); // updated_at
 
   // hide student id
-<<<<<<< HEAD
   if (rowIdx === rowIdxStudentId && value)
-=======
-  if (rowIdx === rowIdxStudentId)
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
     sheetStudent.getRange(rowIdx, colIdx).setValue('*******');
 }
 
@@ -330,12 +291,8 @@ function calcSectionRowStartFrom(sectionNum, type) {
   return (sectionNum - 1) * labelsLen + LABELS_TT_ROW.length + OFFSET_ROW + 1;
 }
 
-<<<<<<< HEAD
 function calcDataId(date, colIdx) {
   // console.log({message: "func: calcDataId", date, colIdx})
-=======
-function calcDateId(date, colIdx) {
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
@@ -365,7 +322,6 @@ function getDataIdx(sheetData, dataId) {
 function createSheets() {
   // recreateSheets();
   const sheetsRss = ssRss.getSheets();
-<<<<<<< HEAD
   sheetsRss.forEach((sheet) => setSheetCommon(sheet))
   // sheetsRss.forEach((sheet) => {
   //   setSheetCommon(sheet)
@@ -379,11 +335,6 @@ function createSheets() {
   //   if(sheet.getSheetName() === "test") return
   //   setSheetCommon(sheet)
   // });
-=======
-  sheetsRss.forEach((sheet) => setSheetCommon(sheet));
-  const sheetsStudent = ssStudent.getSheets();
-  sheetsStudent.forEach((sheet) => setSheetCommon(sheet));
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
   const sheetsData = ssData.getSheets();
   sheetsData.forEach((sheet) => setSheetData(sheet));
 }
@@ -393,7 +344,6 @@ function recreateSheets() {
   const sheetNamesStudent = ssStudent.getSheets().map((s) => s.getSheetName());
   const sheetNamesData = ssData.getSheets().map((s) => s.getSheetName());
   INDUSTRIES.forEach((name) => {
-<<<<<<< HEAD
     // if (sheetNamesRss.some((s) => s === name))
     //   ssRss.deleteSheet(ssRss.getSheetByName(name));
     // ssRss.insertSheet(name);
@@ -403,15 +353,6 @@ function recreateSheets() {
     //   ssStudent.deleteSheet(ssStudent.getSheetByName(name));
     // ssStudent.insertSheet(name);
     if (!sheetNamesStudent.some((s) => s === name)) ssStudent.insertSheet(name)
-=======
-    if (sheetNamesRss.some((s) => s === name))
-      ssRss.deleteSheet(ssRss.getSheetByName(name));
-    ssRss.insertSheet(name);
-
-    if (sheetNamesStudent.some((s) => s === name))
-      ssStudent.deleteSheet(ssStudent.getSheetByName(name));
-    ssStudent.insertSheet(name);
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
 
     if (sheetNamesData.some((s) => s === name)) return;
     ssData.insertSheet(name);
@@ -421,7 +362,6 @@ function recreateSheets() {
 const DATE_TO_ADD = {
   year: 2021,
   month: 2,
-<<<<<<< HEAD
   days: [8,10,12]
 };
 function addBlankData() {
@@ -447,24 +387,6 @@ function addBlankData() {
     //   date.setDate(day + 1);
     //   if (date.getMonth() === DATE_TO_ADD.month) break;
     // }
-=======
-};
-function addBlankData() {
-  INDUSTRIES.forEach((name) => {
-    const date = new Date(DATE_TO_ADD.year, DATE_TO_ADD.month - 1, 1);
-    for (let i = 1; i < 8; i++) {
-      const day = date.getDate();
-      const dayOfTheWeek = date.getDay();
-      if (dayOfTheWeek > 0 && dayOfTheWeek < 6) {
-        const sheetRss = ssRss.getSheetByName(name);
-        setSheetRss(sheetRss, DATE_TO_ADD.year, DATE_TO_ADD.month, day);
-        const sheetStudent = ssStudent.getSheetByName(name);
-        setSheetStudent(sheetStudent, DATE_TO_ADD.year, DATE_TO_ADD.month, day);
-      }
-      date.setDate(day + 1);
-      if (date.getMonth() === DATE_TO_ADD.month) break;
-    }
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
   });
 }
 
@@ -518,12 +440,9 @@ function setSheetRss(sheet, year, month, day) {
     .setHorizontalAlignment('center');
 }
 
-<<<<<<< HEAD
 // function setSheetRssGD(sheet, year, month, day) {
 // }
 
-=======
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
 function setSheetStudent(sheet, year, month, day) {
   const initCol = OFFSET_COL + 1;
   const initRow = sheet.getLastRow() + 1;
@@ -560,12 +479,9 @@ function setSheetStudent(sheet, year, month, day) {
   });
 }
 
-<<<<<<< HEAD
 // function setSheetStudentGD(sheet, year, month, day) {
 // }
 
-=======
->>>>>>> 9bf18048b1f41520d3005e332356eec8bedc6680
 function setSheetData(sheet) {
   sheet.getRange(1, 1, 1, DATA_COLMUNS.length).setValues([DATA_COLMUNS]);
 }
