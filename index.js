@@ -17,6 +17,7 @@ const INDUSTRIES = [
   '金融',
   '人材・教育・サービス業・エンタメ・コンサル',
 ];
+
 const TIMETABLE = [
   '1コマ(9:00-10:30)',
   '2コマ(10:45-12:15)',
@@ -220,6 +221,7 @@ function _onEditStudent(e, rowIdx, colIdx) {
   const sheetStudent = e.source.getActiveSheet();
   const sheetData = ssData.getSheetByName(sheetStudent.getSheetName());
 
+
   const value = sheetStudent.getRange(rowIdx, colIdx).getValue();
   console.log({
     message: 'func: _onEditStudent()',
@@ -360,11 +362,21 @@ function studentIdHelpMsg(value) {
 
 // create sheets
 function createSheets() {
-  recreateSheets();
+  // recreateSheets();
   const sheetsRss = ssRss.getSheets();
-  sheetsRss.forEach((sheet) => setSheetCommon(sheet));
+  sheetsRss.forEach((sheet) => setSheetCommon(sheet))
+  // sheetsRss.forEach((sheet) => {
+  //   setSheetCommon(sheet)
+  //   if(sheet.getSheetName() === "GD") {
+  //     C-E列 を削除
+  //   }
+  // });
   const sheetsStudent = ssStudent.getSheets();
-  sheetsStudent.forEach((sheet) => setSheetCommon(sheet));
+  sheetsStudent.forEach((sheet) => setSheetCommon(sheet))
+  // sheetsStudent.forEach((sheet) => {
+  //   if(sheet.getSheetName() === "test") return
+  //   setSheetCommon(sheet)
+  // });
   const sheetsData = ssData.getSheets();
   sheetsData.forEach((sheet) => setSheetData(sheet));
 }
@@ -468,6 +480,9 @@ function setSheetRss(sheet, year, month, day) {
     .setHorizontalAlignment('center');
 }
 
+// function setSheetRssGD(sheet, year, month, day) {
+// }
+
 function setSheetStudent(sheet, year, month, day) {
   const initCol = OFFSET_COL + 1;
   const initRow = sheet.getLastRow() + 1;
@@ -503,6 +518,9 @@ function setSheetStudent(sheet, year, month, day) {
     cell.setDataValidation(CONSULTING_CONTENT_RULE);
   });
 }
+
+// function setSheetStudentGD(sheet, year, month, day) {
+// }
 
 function setSheetData(sheet) {
   sheet.getRange(1, 1, 1, DATA_COLMUNS.length).setValues([DATA_COLMUNS]);
