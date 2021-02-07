@@ -10,20 +10,18 @@ var ssData = SpreadsheetApp.openById(
 );
 
 const INDUSTRIES = [
-  'GD',
   'メーカー',
   'IT・コンサル',
   '建設',
   '小売・流通・印刷',
   '金融',
-  'IT人材・教育・サービス業・エンタメ・コンサル',
+  '人材・教育・サービス業・エンタメ・コンサル',
 ];
 const TIMETABLE = [
   '1コマ(9:00-10:30)',
   '2コマ(10:45-12:15)',
   '3コマ(13:05-14:35)',
   '4コマ(14:50-16:20)',
-  '5コマ(16:35-18:05)',
 ];
 const MAX_SESSION_NUM = 3;
 const LABELS_TT_ROW = [['時間割'], ['セッション']];
@@ -90,10 +88,25 @@ function delTriggers() {
 }
 
 function onEditRss(e) {
-  // validate check range
+  const debug_e = {
+    namedValues: e.namedValues,
+    range: e.range.getA1Notation(),
+    value: e.value,
+  };
+  console.log({ message: 'onEditRss() Event Object', eventObject: debug_e });
+
   const range = e.range;
   const rowIdx = range.getRow();
   const colIdx = range.getColumn();
+  for (let i = 0; i < range.getNumColumns(); i++) {
+    for (let j = 0; j < range.getNumRows(); j++) {
+      _onEditRss(e, rowIdx + j, colIdx + i);
+    }
+  }
+}
+
+function _onEditRss(e, rowIdx, colIdx) {
+  // validate check range
   if (rowIdx < CHECK_RANGE.from.rowIdx || colIdx < CHECK_RANGE.from.colIdx)
     return;
 
@@ -101,17 +114,34 @@ function onEditRss(e) {
   const sheetStudent = ssStudent.getSheetByName(sheetRss.getSheetName());
   const sheetData = ssData.getSheetByName(sheetRss.getSheetName());
 
+  const value = sheetRss.getRange(rowIdx, colIdx).getValue();
+  console.log({
+    message: 'func: editRss()',
+    value,
+    rowIdx,
+    colIdx,
+    sheetName: sheetRss.getSheetName(),
+  });
+
   const sectionNum = calcSectionNum(rowIdx, 'rss');
   const questionNum = calcQuestionNum(rowIdx, 'rss');
 
   const rowIdxStartFromRss = calcSectionRowStartFrom(sectionNum, 'rss');
   const rowIdxStartFromStudent = calcSectionRowStartFrom(sectionNum, 'student');
   const rowIdxLastData = sheetData.getLastRow();
+  const rowIdxStudentIdRss = rowIdxStartFromRss + 1;
+
+  if (rowIdx === rowIdxStudentIdRss && !validateStudentId(value)) {
+    const msg = studentIdHelpMsg(value);
+    Browser.msgBox(msg, Browser.Buttons.Yes);
+    sheetRss.getRange(rowIdx, colIdx).setValue('');
+    return;
+  }
 
   const date = sheetRss
     .getRange(rowIdxStartFromRss, 1, LABELS_INPUT_ROW_RSS.length, 1)
     .getValue(); // suppose to be Date object
-  const dataId = calcDateId(date, colIdx);
+  const dataId = calcDataId(date, colIdx);
 
   // find dataId and row idx of data
   const dataIdx = getDataIdx(sheetData, dataId);
@@ -129,7 +159,7 @@ function onEditRss(e) {
   if (questionNum === 1) colIdxData = 5;
   if (questionNum === 2) colIdxData = 4;
   if (colIdxData) {
-    sheetData.getRange(rowIdxData, colIdxData).setValue(e.value);
+    sheetData.getRange(rowIdxData, colIdxData).setValue(value);
     sheetData.getRange(rowIdxData, 10).setValue(new Date()); // updated_at
   }
 
@@ -163,25 +193,60 @@ function onEditRss(e) {
 }
 
 function onEditStudent(e) {
+  const debug_e = {
+    namedValues: e.namedValues,
+    range: e.range.getA1Notation(),
+    value: e.value,
+  };
+  console.log({
+    message: 'onEditStudent() Event Object',
+    eventObject: debug_e,
+  });
+
   const range = e.range;
   const rowIdx = range.getRow();
   const colIdx = range.getColumn();
+  for (let i = 0; i < range.getNumColumns(); i++) {
+    for (let j = 0; j < range.getNumRows(); j++) {
+      _onEditStudent(e, rowIdx + j, colIdx + i);
+    }
+  }
+}
+
+function _onEditStudent(e, rowIdx, colIdx) {
   if (rowIdx < CHECK_RANGE.from.rowIdx || colIdx < CHECK_RANGE.from.colIdx)
     return;
 
   const sheetStudent = e.source.getActiveSheet();
   const sheetData = ssData.getSheetByName(sheetStudent.getSheetName());
 
+  const value = sheetStudent.getRange(rowIdx, colIdx).getValue();
+  console.log({
+    message: 'func: _onEditStudent()',
+    value,
+    rowIdx,
+    colIdx,
+    sheetName: sheetStudent.getSheetName(),
+  });
+
   const sectionNum = calcSectionNum(rowIdx, 'student');
   const questionNum = calcQuestionNum(rowIdx, 'student');
+
   const rowIdxStartFromStudent = calcSectionRowStartFrom(sectionNum, 'student');
   const rowIdxStudentId = rowIdxStartFromStudent + 1;
   const rowIdxLastData = sheetData.getLastRow();
 
+  if (rowIdx === rowIdxStudentId && !validateStudentId(value)) {
+    const msg = studentIdHelpMsg(value);
+    Browser.msgBox(msg, Browser.Buttons.Yes);
+    sheetStudent.getRange(rowIdx, colIdx).setValue('');
+    return;
+  }
+
   const date = sheetStudent
     .getRange(rowIdxStartFromStudent, 1, LABELS_INPUT_ROW_STUDENT.length, 1)
     .getValue(); // suppose to be Date object
-  const dataId = calcDateId(date, colIdx);
+  const dataId = calcDataId(date, colIdx);
 
   // find dataId and row idx of data
   const dataIdx = getDataIdx(sheetData, dataId);
@@ -196,21 +261,20 @@ function onEditStudent(e) {
 
   // set data
   let colIdxData = null;
-  console.log(questionNum);
   if (questionNum === 1) colIdxData = 3;
   if (questionNum === 2) colIdxData = 2;
   if (!colIdxData) return;
 
   const period = calcPeriod(colIdx);
   const session = calcSession(colIdx);
-  sheetData.getRange(rowIdxData, colIdxData).setValue(e.value);
+  sheetData.getRange(rowIdxData, colIdxData).setValue(value);
   sheetData.getRange(rowIdxData, 6).setValue(date);
   sheetData.getRange(rowIdxData, 7).setValue(period);
   sheetData.getRange(rowIdxData, 8).setValue(session);
   sheetData.getRange(rowIdxData, 10).setValue(new Date()); // updated_at
 
   // hide student id
-  if (rowIdx === rowIdxStudentId)
+  if (rowIdx === rowIdxStudentId && value)
     sheetStudent.getRange(rowIdx, colIdx).setValue('*******');
 }
 
@@ -254,7 +318,7 @@ function calcSectionRowStartFrom(sectionNum, type) {
   return (sectionNum - 1) * labelsLen + LABELS_TT_ROW.length + OFFSET_ROW + 1;
 }
 
-function calcDateId(date, colIdx) {
+function calcDataId(date, colIdx) {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
@@ -280,6 +344,20 @@ function getDataIdx(sheetData, dataId) {
   return concated.indexOf(dataId);
 }
 
+function validateStudentId(value) {
+  const str = value.toString();
+  return !str || str.match(/^\d{2}(m|\d)\d{4}$/);
+}
+
+function studentIdHelpMsg(value) {
+  return `
+    ${value}は正しい学籍番号ではありません。\\n
+    以下をご確認いただき再度入力をお願いします。\\n\\n
+    ・学籍番号が半角英数字7桁になっている\\n
+    ・院生の方は'm'が小文字になっている
+  `;
+}
+
 // create sheets
 function createSheets() {
   recreateSheets();
@@ -299,10 +377,12 @@ function recreateSheets() {
     if (sheetNamesRss.some((s) => s === name))
       ssRss.deleteSheet(ssRss.getSheetByName(name));
     ssRss.insertSheet(name);
+    // if (!sheetNamesRss.some((s) => s === name)) ssRss.insertSheet(name)
 
     if (sheetNamesStudent.some((s) => s === name))
       ssStudent.deleteSheet(ssStudent.getSheetByName(name));
     ssStudent.insertSheet(name);
+    // if (!sheetNamesStudent.some((s) => s === name)) ssStudent.insertSheet(name)
 
     if (sheetNamesData.some((s) => s === name)) return;
     ssData.insertSheet(name);
@@ -312,22 +392,29 @@ function recreateSheets() {
 const DATE_TO_ADD = {
   year: 2021,
   month: 2,
+  days: [8, 10, 12],
 };
 function addBlankData() {
   INDUSTRIES.forEach((name) => {
-    const date = new Date(DATE_TO_ADD.year, DATE_TO_ADD.month - 1, 1);
-    for (let i = 1; i < 8; i++) {
-      const day = date.getDate();
-      const dayOfTheWeek = date.getDay();
-      if (dayOfTheWeek > 0 && dayOfTheWeek < 6) {
-        const sheetRss = ssRss.getSheetByName(name);
-        setSheetRss(sheetRss, DATE_TO_ADD.year, DATE_TO_ADD.month, day);
-        const sheetStudent = ssStudent.getSheetByName(name);
-        setSheetStudent(sheetStudent, DATE_TO_ADD.year, DATE_TO_ADD.month, day);
-      }
-      date.setDate(day + 1);
-      if (date.getMonth() === DATE_TO_ADD.month) break;
-    }
+    DATE_TO_ADD.days.forEach((day) => {
+      const sheetRss = ssRss.getSheetByName(name);
+      setSheetRss(sheetRss, DATE_TO_ADD.year, DATE_TO_ADD.month, day);
+      const sheetStudent = ssStudent.getSheetByName(name);
+      setSheetStudent(sheetStudent, DATE_TO_ADD.year, DATE_TO_ADD.month, day);
+    });
+    // const date = new Date(DATE_TO_ADD.year, DATE_TO_ADD.month - 1, 1);
+    // for (let i = 1; i < 31; i++) {
+    //   const day = date.getDate();
+    //   const dayOfTheWeek = date.getDay();
+    //   if (dayOfTheWeek > 0 && dayOfTheWeek < 6) {
+    //     const sheetRss = ssRss.getSheetByName(name);
+    //     setSheetRss(sheetRss, DATE_TO_ADD.year, DATE_TO_ADD.month, day);
+    //     const sheetStudent = ssStudent.getSheetByName(name);
+    //     setSheetStudent(sheetStudent, DATE_TO_ADD.year, DATE_TO_ADD.month, day);
+    //   }
+    //   date.setDate(day + 1);
+    //   if (date.getMonth() === DATE_TO_ADD.month) break;
+    // }
   });
 }
 
